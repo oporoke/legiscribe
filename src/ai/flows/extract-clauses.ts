@@ -29,17 +29,17 @@ const extractClausesPrompt = ai.definePrompt({
   input: { schema: ExtractClausesInputSchema },
   output: { schema: ExtractClausesOutputSchema },
   prompt: `You are an expert legal assistant specializing in parsing legislative documents.
-Your task is to break down the provided bill text into individual clauses or provisions.
+Your task is to meticulously break down the provided bill text into its individual, distinct clauses or provisions.
 
-- Analyze the structure of the document. A clause can be a paragraph, a numbered or lettered item, or a distinct section.
-- Identify each distinct clause or provision.
-- Number each clause sequentially starting from 1.
-- For each clause, create a unique ID in the format "clause-N", where N is the clause number.
-- Ensure the full, original text of each clause is preserved.
-- Return the result as a structured list of objects.
+- Analyze the structure of the document. A clause can be a paragraph, a numbered or lettered item, a "Section", or any other distinct part of the text that can be voted on.
+- Identify each distinct clause. Pay close attention to numbering (e.g., Section 1, Section 2) and paragraphs.
+- Number each extracted clause sequentially, starting from 1.
+- For each clause, create a unique ID in the format "clause-N", where N is its sequential number.
+- It is crucial that the full, original text of each clause is preserved without any modification.
+- Return the result as a structured JSON object containing a list of these clause objects.
 
 Bill Text:
-{{billText}}`,
+{{{billText}}}`,
 });
 
 const extractClausesFlow = ai.defineFlow(
@@ -50,6 +50,9 @@ const extractClausesFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await extractClausesPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('Clause extraction failed to produce an output.');
+    }
+    return output;
   }
 );
