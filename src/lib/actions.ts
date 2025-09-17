@@ -5,6 +5,7 @@ import { summarizeBill } from '@/ai/flows/summarize-bill';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
+import { GoogleGenerativeAIError } from '@google/generative-ai';
 
 const ProcessBillInput = z.object({
   fileName: z.string(),
@@ -58,11 +59,20 @@ export async function processBill(
       };
 
       return { bill: processedBill, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error processing bill (attempt ${attempt}):`, error);
-      
-      const isServiceUnavailable = error.status === 503 || (error.message && error.message.includes('503'));
-      const isRateLimited = error.status === 429;
+
+      let isServiceUnavailable = false;
+      let isRateLimited = false;
+
+      if (error instanceof GoogleGenerativeAIError) {
+        isServiceUnavailable = error.status === 503;
+        isRateLimited = error.status === 429;
+      } else if (error instanceof Error) {
+        // Fallback for other error types that might include status codes in their message
+        isServiceUnavailable = error.message.includes('503');
+        isRateLimited = error.message.includes('429');
+      }
 
       if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
         await sleep(1000 * attempt); // Wait longer between retries
@@ -82,16 +92,17 @@ export async function processBill(
           error: 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.',
         };
       }
-
+      
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
       return {
         bill: null,
-        error: error.message || 'An unexpected error occurred while processing the bill. Please try again.',
+        error: `An unexpected error occurred while processing the bill: ${errorMessage}. Please try again.`,
       };
     }
   }
 
   return {
     bill: null,
-    error: 'Failed to process the bill after multiple attempts. Please try again later.',
+    error: 'Failed to process the bill after multiple attempts. The service may be busy. Please try again later.',
   };
 }
