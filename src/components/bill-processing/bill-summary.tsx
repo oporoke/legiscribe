@@ -66,7 +66,7 @@ export function BillSummary({ summary, originalText }: BillSummaryProps) {
               Original Text
             </TabsTrigger>
           </TabsList>
-          <ScrollArea className="h-96 w-full mt-4 pr-4">
+          <ScrollArea className="w-full mt-4 pr-4 max-h-[60vh]">
             <TabsContent value="summary">
               <div className="prose prose-sm max-w-none text-foreground">
                 {getFormattedText(summary)}
