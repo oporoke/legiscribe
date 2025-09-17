@@ -70,12 +70,15 @@ export async function processBill(
         isRateLimited = error.status === 429;
       } else if (error instanceof Error) {
         // Fallback for other error types that might include status codes in their message
-        isServiceUnavailable = error.message.includes('503');
-        isRateLimited = error.message.includes('429');
+        const message = error.message.toLowerCase();
+        isServiceUnavailable = message.includes('503') || message.includes('service unavailable');
+        isRateLimited = message.includes('429') || message.includes('too many requests') || message.includes('rate limit');
       }
 
       if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
-        await sleep(1000 * attempt); // Wait longer between retries
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s
+        console.log(`Retrying after ${delay}ms...`);
+        await sleep(delay); 
         continue;
       }
       
