@@ -27,8 +27,8 @@ export async function processBill(
 
   try {
     const [summaryResult, clausesResult] = await Promise.all([
-      summarizeBill({ billText }),
-      extractClauses({ billText }),
+      summarizeBill({ billText: billText }),
+      extractClauses({ billText: billText }),
     ]);
 
     if (!summaryResult?.summarizedBill || !clausesResult?.clauses) {
