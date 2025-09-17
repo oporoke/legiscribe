@@ -44,10 +44,13 @@ export async function processBill(
     try {
       // Execute sequentially for stability
       const clausesResult = await extractClauses({ billText: billText });
+      if (!clausesResult?.clauses) {
+        throw new Error('AI processing failed to extract clauses.');
+      }
+      
       const summaryResult = await summarizeBill({ billText: billText });
-
-      if (!clausesResult?.clauses || !summaryResult?.summary) {
-        throw new Error('AI processing failed to return expected results. The summary or clauses were not generated.');
+      if (!summaryResult?.summary) {
+        throw new Error('AI processing failed to generate a summary.');
       }
 
       const processedBill: ProcessedBill = {
@@ -66,25 +69,21 @@ export async function processBill(
       let isRateLimited = false;
 
       if (error instanceof GoogleGenerativeAIError) {
-        // Specific check for Google AI errors
         isServiceUnavailable = error.status === 503;
         isRateLimited = error.status === 429;
       } else if (error instanceof Error) {
-        // Fallback for other error types that might include status codes in their message
         const message = error.message.toLowerCase();
         isServiceUnavailable = message.includes('503') || message.includes('service unavailable');
         isRateLimited = message.includes('429') || message.includes('too many requests') || message.includes('rate limit');
       }
 
-      // Retry logic for transient errors
       if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s
+        const delay = Math.pow(2, attempt) * 1000;
         console.log(`Retrying after ${delay}ms...`);
         await sleep(delay); 
-        continue; // Go to the next iteration of the loop
+        continue;
       }
       
-      // After final attempt, return specific error messages
       if (isServiceUnavailable) {
         return {
           bill: null,
@@ -99,7 +98,6 @@ export async function processBill(
         };
       }
       
-      // Generic error for any other case
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
       return {
         bill: null,
@@ -108,7 +106,6 @@ export async function processBill(
     }
   }
 
-  // This will only be reached if all retries fail
   return {
     bill: null,
     error: 'Failed to process the bill after multiple attempts. The service may be busy. Please try again later.',
@@ -125,7 +122,6 @@ export async function explainClause(
 ): Promise<{ explanation: string | null; error: string | null }> {
   try {
     const result = await explainClauseFlow(input);
-    // Check for an empty or invalid explanation from the flow.
     if (!result || !result.explanation) {
       return { explanation: null, error: 'The AI failed to generate an explanation. This may be due to service load or content restrictions.' };
     }
@@ -133,7 +129,6 @@ export async function explainClause(
   } catch (error) {
     console.error('Error explaining clause:', error);
 
-    // Provide specific error messages for known issues
     if (error instanceof GoogleGenerativeAIError && error.status === 429) {
       return { 
         explanation: null, 
