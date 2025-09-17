@@ -38,18 +38,17 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
     setExplanationLoading((prev) => ({ ...prev, [clauseId]: true }));
     setExplanations((prev) => ({ ...prev, [clauseId]: '' })); // Clear previous
 
-    const result = await explainClause({ clauseText, billText: bill.originalText });
-    
-    setExplanationLoading((prev) => ({ ...prev, [clauseId]: false }));
-    
-    if (result.error) {
+    try {
+      const explanation = await explainClause({ clauseText, billText: bill.originalText });
+      setExplanations((prev) => ({ ...prev, [clauseId]: explanation }));
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Explanation Failed',
-        description: result.error,
+        description: error instanceof Error ? error.message : 'An unknown error occurred.',
       });
-    } else if (result.explanation) {
-      setExplanations((prev) => ({ ...prev, [clauseId]: result.explanation! }));
+    } finally {
+      setExplanationLoading((prev) => ({ ...prev, [clauseId]: false }));
     }
   };
   

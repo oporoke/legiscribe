@@ -39,18 +39,13 @@ export async function processBill(
     return { bill: null, error: error instanceof Error ? error.message : 'Failed to read file.' };
   }
 
-  const maxRetries = 3;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      // Execute sequentially for stability
       const clausesResult = await extractClauses({ billText: billText });
-      if (!clausesResult?.clauses) {
-        throw new Error('AI processing failed to extract clauses.');
-      }
-      
       const summaryResult = await summarizeBill({ billText: billText });
-      if (!summaryResult?.summary) {
-        throw new Error('AI processing failed to generate a summary.');
+      
+      if (!clausesResult?.clauses || !summaryResult?.summary) {
+        throw new Error('AI processing failed to produce a valid output.');
       }
 
       const processedBill: ProcessedBill = {
@@ -77,7 +72,7 @@ export async function processBill(
         isRateLimited = message.includes('429') || message.includes('too many requests') || message.includes('rate limit');
       }
 
-      if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
+      if ((isServiceUnavailable || isRateLimited) && attempt < 3) {
         const delay = Math.pow(2, attempt) * 1000;
         console.log(`Retrying after ${delay}ms...`);
         await sleep(delay); 
@@ -119,30 +114,26 @@ const ExplainClauseInput = z.object({
 
 export async function explainClause(
   input: z.infer<typeof ExplainClauseInput>
-): Promise<{ explanation: string | null; error: string | null }> {
+): Promise<string> {
   try {
     const result = await explainClauseFlow(input);
-    if (!result || !result.explanation) {
-      return { explanation: null, error: 'The AI failed to generate an explanation. This may be due to service load or content restrictions.' };
+    if (!result.explanation) {
+      throw new Error('The AI failed to generate an explanation. This may be due to service load or content restrictions.');
     }
-    return { explanation: result.explanation, error: null };
+    return result.explanation;
   } catch (error) {
-    console.error('Error explaining clause:', error);
-
-    if (error instanceof GoogleGenerativeAIError && error.status === 429) {
-      return { 
-        explanation: null, 
-        error: 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.'
-      };
-    }
-    if (error instanceof GoogleGenerativeAIError && error.status === 503) {
-      return { 
-        explanation: null, 
-        error: 'The AI service is temporarily unavailable. Please try again in a few moments.'
-      };
+    console.error('Error in explainClause server action:', error);
+    
+    if (error instanceof GoogleGenerativeAIError) {
+      if (error.status === 429) {
+        throw new Error('You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.');
+      }
+      if (error.status === 503) {
+        throw new Error('The AI service is temporarily unavailable. Please try again in a few moments.');
+      }
     }
     
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
-    return { explanation: null, error: `Failed to get explanation: ${errorMessage}` };
+    // For any other error, throw a generic message
+    throw new Error('An unexpected error occurred while generating the explanation. Please try again.');
   }
 }
