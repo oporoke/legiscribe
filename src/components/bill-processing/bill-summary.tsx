@@ -14,6 +14,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { BrainCircuit, FileTextIcon } from 'lucide-react';
 
 interface BillSummaryProps {
   summary: string;
@@ -56,8 +57,14 @@ export function BillSummary({ summary, originalText }: BillSummaryProps) {
       <CardContent>
         <Tabs defaultValue="summary">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="summary">AI Summary</TabsTrigger>
-            <TabsTrigger value="original">Original Text</TabsTrigger>
+            <TabsTrigger value="summary">
+              <BrainCircuit className="mr-2 h-4 w-4" />
+              AI Summary
+            </TabsTrigger>
+            <TabsTrigger value="original">
+              <FileTextIcon className="mr-2 h-4 w-4" />
+              Original Text
+            </TabsTrigger>
           </TabsList>
           <ScrollArea className="h-96 w-full mt-4 pr-4">
             <TabsContent value="summary">
