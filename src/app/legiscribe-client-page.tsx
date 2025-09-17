@@ -15,22 +15,36 @@ export function LegiscribeClientPage() {
 
   const handleProcessBill = async (file: File) => {
     setIsLoading(true);
-    const result = await processBill({ fileName: file.name });
-    setIsLoading(false);
 
-    if (result.error) {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const fileContent = event.target?.result as string;
+      const result = await processBill({ fileName: file.name, fileContent });
+      setIsLoading(false);
+
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Processing Error',
+          description: result.error,
+        });
+      } else if (result.bill) {
+        setBill(result.bill);
+        toast({
+          title: 'Processing Complete',
+          description: `Successfully processed ${result.bill.fileName}.`,
+        });
+      }
+    };
+    reader.onerror = () => {
+      setIsLoading(false);
       toast({
         variant: 'destructive',
-        title: 'Processing Error',
-        description: result.error,
-      });
-    } else if (result.bill) {
-      setBill(result.bill);
-      toast({
-        title: 'Processing Complete',
-        description: `Successfully processed ${result.bill.fileName}.`,
+        title: 'File Read Error',
+        description: 'Could not read the selected file.',
       });
     }
+    reader.readAsText(file);
   };
 
   const handleReset = () => {

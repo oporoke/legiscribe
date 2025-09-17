@@ -22,11 +22,12 @@ export function FileUploadView({ onProcess }: FileUploadViewProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
+      'text/plain': ['.txt'],
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
-    maxSize: 1024 * 1024 * 1024, // 1GB
+    maxSize: 1024 * 1024 * 10, // 10MB
     multiple: false,
   });
 
@@ -45,7 +46,7 @@ export function FileUploadView({ onProcess }: FileUploadViewProps) {
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline">Upload Bill Draft</CardTitle>
-          <CardDescription>Upload a PDF or Word document for processing and review.</CardDescription>
+          <CardDescription>Upload a text file (.txt) for processing and review.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {!file ? (
@@ -59,7 +60,7 @@ export function FileUploadView({ onProcess }: FileUploadViewProps) {
               <p className="mt-4 text-center text-muted-foreground">
                 {isDragActive ? 'Drop the file here...' : 'Drag & drop a file here, or click to select'}
               </p>
-              <p className="text-xs text-muted-foreground">PDF, DOC, DOCX (up to 1GB)</p>
+              <p className="text-xs text-muted-foreground">TXT, PDF, DOC, DOCX (up to 10MB)</p>
             </div>
           ) : (
             <div className="flex items-center justify-between rounded-lg border bg-secondary/50 p-4">

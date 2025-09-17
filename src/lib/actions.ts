@@ -2,12 +2,12 @@
 
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
-import { MOCK_BILL_TEXT } from '@/lib/mock-data';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 
 const ProcessBillInput = z.object({
   fileName: z.string(),
+  fileContent: z.string(),
 });
 
 async function sleep(ms: number) {
@@ -22,12 +22,8 @@ export async function processBill(
     return { bill: null, error: 'Invalid input.' };
   }
   
-  const { fileName } = validatedInput.data;
-
-  // In a real application, you would handle file upload here,
-  // extract text from PDF/Word, and use that text.
-  // For this demo, we're using mock data.
-  const billText = MOCK_BILL_TEXT;
+  const { fileName, fileContent } = validatedInput.data;
+  const billText = fileContent;
 
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
