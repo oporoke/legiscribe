@@ -125,12 +125,28 @@ export async function explainClause(
 ): Promise<{ explanation: string | null; error: string | null }> {
   try {
     const result = await explainClauseFlow(input);
-    if (!result.explanation) {
-      return { explanation: null, error: 'Failed to generate an explanation.' };
+    // Check for an empty or invalid explanation from the flow.
+    if (!result || !result.explanation) {
+      return { explanation: null, error: 'The AI failed to generate an explanation. This may be due to service load or content restrictions.' };
     }
     return { explanation: result.explanation, error: null };
   } catch (error) {
     console.error('Error explaining clause:', error);
+
+    // Provide specific error messages for known issues
+    if (error instanceof GoogleGenerativeAIError && error.status === 429) {
+      return { 
+        explanation: null, 
+        error: 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.'
+      };
+    }
+    if (error instanceof GoogleGenerativeAIError && error.status === 503) {
+      return { 
+        explanation: null, 
+        error: 'The AI service is temporarily unavailable. Please try again in a few moments.'
+      };
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return { explanation: null, error: `Failed to get explanation: ${errorMessage}` };
   }

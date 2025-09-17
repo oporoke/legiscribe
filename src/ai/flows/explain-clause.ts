@@ -55,7 +55,8 @@ const explainClauseFlow = ai.defineFlow(
     const { output } = await explainClausePrompt(input);
     if (!output) {
       console.error('Explanation generation failed to produce an output.');
-      return { explanation: 'Could not generate an explanation at this time.' };
+      // Return a valid, empty output to conform to the schema and prevent crashes.
+      return { explanation: '' };
     }
     return output;
   }
