@@ -41,10 +41,9 @@ export async function processBill(
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const [clausesResult, summaryResult] = await Promise.all([
-        extractClauses({ billText: billText }),
-        summarizeBill({ billText: billText })
-      ]);
+      // Execute sequentially for stability
+      const clausesResult = await extractClauses({ billText: billText });
+      const summaryResult = await summarizeBill({ billText: billText });
 
       if (!clausesResult?.clauses || !summaryResult?.summary) {
         throw new Error('AI processing failed to return expected results. The summary or clauses were not generated.');
@@ -66,6 +65,7 @@ export async function processBill(
       let isRateLimited = false;
 
       if (error instanceof GoogleGenerativeAIError) {
+        // Specific check for Google AI errors
         isServiceUnavailable = error.status === 503;
         isRateLimited = error.status === 429;
       } else if (error instanceof Error) {
@@ -75,13 +75,15 @@ export async function processBill(
         isRateLimited = message.includes('429') || message.includes('too many requests') || message.includes('rate limit');
       }
 
+      // Retry logic for transient errors
       if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
         const delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s
         console.log(`Retrying after ${delay}ms...`);
         await sleep(delay); 
-        continue;
+        continue; // Go to the next iteration of the loop
       }
       
+      // After final attempt, return specific error messages
       if (isServiceUnavailable) {
         return {
           bill: null,
@@ -96,6 +98,7 @@ export async function processBill(
         };
       }
       
+      // Generic error for any other case
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
       return {
         bill: null,
@@ -104,6 +107,7 @@ export async function processBill(
     }
   }
 
+  // This will only be reached if all retries fail
   return {
     bill: null,
     error: 'Failed to process the bill after multiple attempts. The service may be busy. Please try again later.',
