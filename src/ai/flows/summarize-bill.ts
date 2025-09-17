@@ -18,7 +18,7 @@ const SummarizeBillInputSchema = z.object({
 export type SummarizeBillInput = z.infer<typeof SummarizeBillInputSchema>;
 
 const SummarizeBillOutputSchema = z.object({
-  summarizedBill: z.string().describe('The summarized text of the legislative bill.'),
+  summary: z.string().describe('The summarized text of the legislative bill, approximately 5-7% shorter than the original.'),
 });
 
 export type SummarizeBillOutput = z.infer<typeof SummarizeBillOutputSchema>;
@@ -33,12 +33,13 @@ const summarizeBillPrompt = ai.definePrompt({
   output: {schema: SummarizeBillOutputSchema},
   prompt: `You are an expert legal professional tasked with summarizing legislative bills.
 
-  Summarize the following bill text to be approximately 5-7% shorter than the original.
-  Preserve the original legal meaning and intent.
-  Maintain all original formatting, including headings, sections, and numbering.
+Your task is to summarize the provided bill text to be approximately 5-7% shorter than the original.
 
-  Bill Text:
-  {{billText}}`,
+It is absolutely critical that you preserve the original legal meaning and intent.
+You must also maintain all original formatting, including headings, sections, and numbering. Do not alter the structure of the document.
+
+Bill Text:
+{{{billText}}}`,
 });
 
 const summarizeBillFlow = ai.defineFlow(
@@ -49,6 +50,9 @@ const summarizeBillFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await summarizeBillPrompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('Summarization failed to produce an output.');
+    }
+    return output;
   }
 );

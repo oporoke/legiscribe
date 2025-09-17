@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Progress } from '@/components/ui/progress';
 import { ClauseCard } from './clause-card';
 import { Download, RotateCcw } from 'lucide-react';
+import { BillSummary } from './bill-summary';
 
 interface BillProcessingViewProps {
   bill: ProcessedBill;
@@ -46,6 +47,9 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
           Process New Bill
         </Button>
       </div>
+
+        <BillSummary summary={bill.summary} originalText={bill.originalText} />
+
         <Card>
           <CardHeader>
             <CardTitle>Clause Voting</CardTitle>

@@ -9,4 +9,5 @@ export interface ProcessedBill {
   fileName: string;
   originalText: string;
   clauses: Clause[];
+  summary: string;
 }
