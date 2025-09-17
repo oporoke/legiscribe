@@ -64,8 +64,10 @@ export async function processBill(
       console.error(`Error processing bill (attempt ${attempt}):`, error);
       
       const isServiceUnavailable = error.status === 503 || (error.message && error.message.includes('503'));
+      const isRateLimited = error.status === 429;
 
-      if (isServiceUnavailable && attempt < maxRetries) {
+
+      if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
         await sleep(1000 * attempt); // Wait longer between retries
         continue;
       }
@@ -76,6 +78,14 @@ export async function processBill(
           error: 'The AI service is temporarily unavailable due to high demand. Please try again in a few moments.',
         };
       }
+      
+      if (isRateLimited) {
+        return {
+          bill: null,
+          error: 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.',
+        };
+      }
+
 
       return {
         bill: null,
