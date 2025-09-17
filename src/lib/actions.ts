@@ -4,10 +4,13 @@ import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
+import { handleFileUpload } from './actions/handle-file-upload';
+
 
 const ProcessBillInput = z.object({
   fileName: z.string(),
-  fileContent: z.string(),
+  fileContent: z.string(), // base64 encoded
+  fileType: z.string(),
 });
 
 async function sleep(ms: number) {
@@ -22,8 +25,19 @@ export async function processBill(
     return { bill: null, error: 'Invalid input.' };
   }
   
-  const { fileName, fileContent } = validatedInput.data;
-  const billText = fileContent;
+  const { fileName, fileContent, fileType } = validatedInput.data;
+  
+  let billText: string;
+  try {
+    billText = await handleFileUpload({
+      fileName,
+      fileContent,
+      fileType,
+    });
+  } catch (error) {
+    return { bill: null, error: error instanceof Error ? error.message : 'Failed to read file.' };
+  }
+
 
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {

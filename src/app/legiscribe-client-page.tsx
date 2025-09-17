@@ -19,7 +19,7 @@ export function LegiscribeClientPage() {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const fileContent = event.target?.result as string;
-      const result = await processBill({ fileName: file.name, fileContent });
+      const result = await processBill({ fileName: file.name, fileContent, fileType: file.type });
       setIsLoading(false);
 
       if (result.error) {
@@ -44,7 +44,7 @@ export function LegiscribeClientPage() {
         description: 'Could not read the selected file.',
       });
     }
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {
