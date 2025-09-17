@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { ClauseCard } from './clause-card';
 import { Download, RotateCcw } from 'lucide-react';
 import { BillSummary } from './bill-summary';
+import { explainClause } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface BillProcessingViewProps {
   bill: ProcessedBill;
@@ -23,9 +25,32 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
       return acc;
     }, {} as Record<string, VoteStatus>)
   );
+  
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [explanationLoading, setExplanationLoading] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
 
   const handleVote = (clauseId: string, vote: 'approved' | 'rejected') => {
     setVotes((prev) => ({ ...prev, [clauseId]: prev[clauseId] === vote ? 'pending' : vote }));
+  };
+
+  const handleExplainClause = async (clauseId: string, clauseText: string) => {
+    setExplanationLoading((prev) => ({ ...prev, [clauseId]: true }));
+    setExplanations((prev) => ({ ...prev, [clauseId]: '' })); // Clear previous
+
+    const result = await explainClause({ clauseText, billText: bill.originalText });
+    
+    setExplanationLoading((prev) => ({ ...prev, [clauseId]: false }));
+    
+    if (result.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Explanation Failed',
+        description: result.error,
+      });
+    } else if (result.explanation) {
+      setExplanations((prev) => ({ ...prev, [clauseId]: result.explanation! }));
+    }
   };
   
   const { votedCount, totalCount, progress } = useMemo(() => {
@@ -69,6 +94,9 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
                 clause={clause}
                 voteStatus={votes[clause.clauseId]}
                 onVote={handleVote}
+                onExplain={handleExplainClause}
+                explanation={explanations[clause.clauseId]}
+                isExplanationLoading={explanationLoading[clause.clauseId]}
               />
             ))}
           </CardContent>

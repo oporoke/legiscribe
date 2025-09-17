@@ -2,6 +2,7 @@
 
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
+import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -112,4 +113,25 @@ export async function processBill(
     bill: null,
     error: 'Failed to process the bill after multiple attempts. The service may be busy. Please try again later.',
   };
+}
+
+const ExplainClauseInput = z.object({
+  clauseText: z.string(),
+  billText: z.string(),
+});
+
+export async function explainClause(
+  input: z.infer<typeof ExplainClauseInput>
+): Promise<{ explanation: string | null; error: string | null }> {
+  try {
+    const result = await explainClauseFlow(input);
+    if (!result.explanation) {
+      return { explanation: null, error: 'Failed to generate an explanation.' };
+    }
+    return { explanation: result.explanation, error: null };
+  } catch (error) {
+    console.error('Error explaining clause:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return { explanation: null, error: `Failed to get explanation: ${errorMessage}` };
+  }
 }
