@@ -46,7 +46,7 @@ export function FileUploadView({ onProcess }: FileUploadViewProps) {
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline">Upload Bill Draft</CardTitle>
-          <CardDescription>Upload a text file (.txt) for processing and review.</CardDescription>
+          <CardDescription>Upload a text, PDF or Word document for processing and review.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {!file ? (

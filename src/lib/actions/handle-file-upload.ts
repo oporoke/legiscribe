@@ -1,7 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-import pdf from 'pdf-parse';
+import pdf from 'pdf-parse-fork';
+import mammoth from 'mammoth';
 
 const FileUploadInputSchema = z.object({
   fileName: z.string(),
@@ -29,6 +30,17 @@ async function getTextFromPdf(fileContent: string): Promise<string> {
   return data.text;
 }
 
+async function getTextFromWord(fileContent: string): Promise<string> {
+  const base64Data = fileContent.split(',')[1];
+  if (!base64Data) {
+    throw new Error('Invalid Word file content.');
+  }
+  const buffer = Buffer.from(base64Data, 'base64');
+  const result = await mammoth.extractRawText({ buffer });
+  return result.value;
+}
+
+
 export async function handleFileUpload(input: FileUploadInput): Promise<string> {
   const validatedInput = FileUploadInputSchema.safeParse(input);
   if (!validatedInput.success) {
@@ -42,10 +54,9 @@ export async function handleFileUpload(input: FileUploadInput): Promise<string> 
       return getTextFromTxt(fileContent);
     case 'application/pdf':
       return getTextFromPdf(fileContent);
-    // case 'application/msword':
-    // case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-    //   // TODO: Add support for doc/docx
-    //   throw new Error('Word documents are not yet supported.');
+    case 'application/msword':
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      return getTextFromWord(fileContent);
     default:
       throw new Error(`Unsupported file type: ${fileType}`);
   }
