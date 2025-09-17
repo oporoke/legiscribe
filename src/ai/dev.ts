@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/summarize-bill.ts';
+import '@/ai/flows/extract-clauses.ts';

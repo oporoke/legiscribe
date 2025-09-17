@@ -1,6 +1,5 @@
 'use server';
 
-import { summarizeBill } from '@/ai/flows/summarize-bill';
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { MOCK_BILL_TEXT } from '@/lib/mock-data';
 import type { ProcessedBill } from '@/lib/types';
@@ -26,12 +25,9 @@ export async function processBill(
   const billText = MOCK_BILL_TEXT;
 
   try {
-    const [summaryResult, clausesResult] = await Promise.all([
-      summarizeBill({ billText: billText }),
-      extractClauses({ billText: billText }),
-    ]);
+    const clausesResult = await extractClauses({ billText: billText });
 
-    if (!summaryResult?.summarizedBill || !clausesResult?.clauses) {
+    if (!clausesResult?.clauses) {
       throw new Error('AI processing failed to return expected results.');
     }
 
@@ -39,7 +35,6 @@ export async function processBill(
       id: new Date().toISOString(),
       fileName: fileName,
       originalText: billText,
-      summarizedText: summaryResult.summarizedBill,
       clauses: clausesResult.clauses,
     };
 

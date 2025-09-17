@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { ProcessedBill, Clause } from '@/lib/types';
+import type { ProcessedBill } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ClauseCard } from './clause-card';
 import { Download, RotateCcw } from 'lucide-react';
 
@@ -41,66 +39,44 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold font-headline">Bill Review: {bill.fileName}</h1>
-          <p className="text-muted-foreground">Review the summary and vote on individual clauses.</p>
+          <p className="text-muted-foreground">Review and vote on individual clauses.</p>
         </div>
         <Button onClick={onReset} variant="outline">
           <RotateCcw className="mr-2 h-4 w-4" />
           Process New Bill
         </Button>
       </div>
-
-      <Tabs defaultValue="vote">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-          <TabsTrigger value="vote">Vote on Clauses</TabsTrigger>
-          <TabsTrigger value="summary">View Summary</TabsTrigger>
-        </TabsList>
-        <TabsContent value="vote">
-          <Card>
-            <CardHeader>
-              <CardTitle>Clause Voting</CardTitle>
-              <CardDescription>Approve or reject each clause of the bill. Your progress is saved automatically.</CardDescription>
-              <div className="pt-2">
-                  <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                      <span>Progress</span>
-                      <span>{votedCount} / {totalCount} clauses voted</span>
-                  </div>
-                  <Progress value={progress} className="w-full" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {bill.clauses.map((clause) => (
-                <ClauseCard
-                  key={clause.clauseId}
-                  clause={clause}
-                  voteStatus={votes[clause.clauseId]}
-                  onVote={handleVote}
-                />
-              ))}
-            </CardContent>
-            <CardFooter className="flex-col items-stretch gap-4 md:flex-row md:justify-end">
-                <Button variant="outline" disabled={progress < 100}>
-                    <Download className="mr-2 h-4 w-4" /> Download as Word
-                </Button>
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={progress < 100}>
-                    <Download className="mr-2 h-4 w-4" /> Download as PDF
-                </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        <TabsContent value="summary">
-          <Card>
-            <CardHeader>
-              <CardTitle>Summarized Bill</CardTitle>
-              <CardDescription>This is the AI-generated summary of the bill, preserving legal intent and structure.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[60vh] rounded-md border p-4">
-                <pre className="whitespace-pre-wrap text-sm font-body">{bill.summarizedText}</pre>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle>Clause Voting</CardTitle>
+            <CardDescription>Approve or reject each clause of the bill. Your progress is saved automatically.</CardDescription>
+            <div className="pt-2">
+                <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                    <span>Progress</span>
+                    <span>{votedCount} / {totalCount} clauses voted</span>
+                </div>
+                <Progress value={progress} className="w-full" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {bill.clauses.map((clause) => (
+              <ClauseCard
+                key={clause.clauseId}
+                clause={clause}
+                voteStatus={votes[clause.clauseId]}
+                onVote={handleVote}
+              />
+            ))}
+          </CardContent>
+          <CardFooter className="flex-col items-stretch gap-4 md:flex-row md:justify-end">
+              <Button variant="outline" disabled={progress < 100}>
+                  <Download className="mr-2 h-4 w-4" /> Download as Word
+              </Button>
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={progress < 100}>
+                  <Download className="mr-2 h-4 w-4" /> Download as PDF
+              </Button>
+          </CardFooter>
+        </Card>
     </div>
   );
 }

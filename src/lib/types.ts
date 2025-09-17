@@ -8,6 +8,5 @@ export interface ProcessedBill {
   id: string;
   fileName: string;
   originalText: string;
-  summarizedText: string;
   clauses: Clause[];
 }
