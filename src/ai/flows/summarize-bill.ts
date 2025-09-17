@@ -51,7 +51,8 @@ const summarizeBillFlow = ai.defineFlow(
   async input => {
     const {output} = await summarizeBillPrompt(input);
     if (!output) {
-      throw new Error('Summarization failed to produce an output.');
+      console.error('Summarization failed to produce an output.');
+      return { summary: '' };
     }
     return output;
   }

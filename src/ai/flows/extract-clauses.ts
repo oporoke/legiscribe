@@ -51,7 +51,8 @@ const extractClausesFlow = ai.defineFlow(
   async (input) => {
     const { output } = await extractClausesPrompt(input);
     if (!output) {
-      throw new Error('Clause extraction failed to produce an output.');
+      console.error('Clause extraction failed to produce an output.');
+      return { clauses: [] };
     }
     return output;
   }

@@ -6,10 +6,9 @@ import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
 
-
 const ProcessBillInput = z.object({
   fileName: z.string(),
-  fileContent: z.string(), // base64 encoded
+  fileContent: z.string(),
   fileType: z.string(),
 });
 
@@ -38,7 +37,6 @@ export async function processBill(
     return { bill: null, error: error instanceof Error ? error.message : 'Failed to read file.' };
   }
 
-
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -48,7 +46,7 @@ export async function processBill(
       ]);
 
       if (!clausesResult?.clauses || !summaryResult?.summary) {
-        throw new Error('AI processing failed to return expected results.');
+        throw new Error('AI processing failed to return expected results. The summary or clauses were not generated.');
       }
 
       const processedBill: ProcessedBill = {
@@ -65,7 +63,6 @@ export async function processBill(
       
       const isServiceUnavailable = error.status === 503 || (error.message && error.message.includes('503'));
       const isRateLimited = error.status === 429;
-
 
       if ((isServiceUnavailable || isRateLimited) && attempt < maxRetries) {
         await sleep(1000 * attempt); // Wait longer between retries
@@ -86,16 +83,13 @@ export async function processBill(
         };
       }
 
-
       return {
         bill: null,
-        error: 'An unexpected error occurred while processing the bill. Please try again.',
+        error: error.message || 'An unexpected error occurred while processing the bill. Please try again.',
       };
     }
   }
 
-  // This part should be unreachable if the loop is structured correctly,
-  // but it's good practice for ensuring a value is always returned.
   return {
     bill: null,
     error: 'Failed to process the bill after multiple attempts. Please try again later.',
