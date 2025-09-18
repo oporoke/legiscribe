@@ -4,6 +4,7 @@ import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
 import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
 import { compareBills } from '@/ai/flows/compare-bills';
+import { analyzeStakeholders } from '@/ai/flows/analyze-stakeholders';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -56,15 +57,23 @@ export async function processBill(
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      // Common processing for both modes
-      const clausesResult = await extractClauses({ billText });
+      // Run AI flows in parallel
+      const [clausesResult, summaryResult, stakeholderAnalysisResult] = await Promise.all([
+        extractClauses({ billText }),
+        summarizeBill({ billText }),
+        analyzeStakeholders({ billText }),
+      ]);
+
       if (!clausesResult?.clauses) {
         throw new Error('AI processing failed to produce valid clauses.');
       }
       
-      const summaryResult = await summarizeBill({ billText });
       if (!summaryResult?.summary) {
         throw new Error('AI processing failed to produce a valid summary.');
+      }
+
+      if (!stakeholderAnalysisResult) {
+        throw new Error('AI processing failed to produce a valid stakeholder analysis.');
       }
 
       const processedBill: ProcessedBill = {
@@ -73,6 +82,7 @@ export async function processBill(
         originalText: billText,
         clauses: clausesResult.clauses,
         summary: summaryResult.summary,
+        stakeholderAnalysis: stakeholderAnalysisResult,
       };
 
       // Comparison-specific processing
