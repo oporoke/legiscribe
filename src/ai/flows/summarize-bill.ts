@@ -18,7 +18,7 @@ const SummarizeBillInputSchema = z.object({
 export type SummarizeBillInput = z.infer<typeof SummarizeBillInputSchema>;
 
 const SummarizeBillOutputSchema = z.object({
-  summary: z.string().describe('The summarized text of the legislative bill, approximately 5-10% of the original length.'),
+  summary: z.string().describe('The summarized text of the legislative bill, formatted as a detailed executive summary.'),
 });
 
 export type SummarizeBillOutput = z.infer<typeof SummarizeBillOutputSchema>;
@@ -31,17 +31,33 @@ const summarizeBillPrompt = ai.definePrompt({
   name: 'summarizeBillPrompt',
   input: {schema: SummarizeBillInputSchema},
   output: {schema: SummarizeBillOutputSchema},
-  prompt: `You are an expert legal professional tasked with summarizing legislative bills.
+  prompt: `You are an expert legal analyst. Your task is to create a comprehensive executive summary of the provided legislative bill. The summary must be concise, approximately 5-10% of the original document's length, and structured in the following format:
 
-Your task is to create a concise executive summary of the provided bill text. The summary should be approximately 5-10% of the length of the original document.
+## BILL SUMMARY - [Extract Bill Title from Document]
 
-The summary should include:
-1.  **Overview**: A 2-3 sentence statement of the bill's main objective and scope.
-2.  **Key Changes**: Note any major changes from previous legislation, if apparent.
-3.  **Part-by-Part Summary**: Briefly summarize the key provisions of each major part or section of the bill.
+### Overview
+- **Purpose**: [Main objective in 2-3 sentences]
+- **Scope**: [What activities/sectors does it cover]
+- **Key Changes**: [Major changes from previous legislation, if apparent]
+
+### Part-by-Part Summary
+**PART I - [Title]**: [2-3 sentence summary of key provisions]
+**PART II - [Title]**: [2-3 sentence summary of key provisions]
+[...continue for all parts...]
+
+### Critical Provisions
+- **Licensing Requirements**: [Summarize key licensing requirements]
+- **Tax Rates/Fees**: [Summarize major rates and charges]
+- **Penalties**: [Summarize the range of penalties and offenses]
+- **Exemptions**: [Summarize who/what is exempt]
+- **Implementation**: [Summarize timeline and enforcement mechanisms]
+
+### Financial Impact
+- [Analyze and summarize revenue projections if available]
+- [Analyze and summarize cost implications for businesses/individuals]
+- [Analyze and summarize implementation costs for the government]
 
 It is absolutely critical that you preserve the original legal meaning and intent.
-You must also maintain all original formatting, including headings, sections, and numbering, to ensure the summary's structure reflects the original document.
 
 Bill Text:
 {{{billText}}}`,
