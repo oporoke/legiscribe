@@ -3,6 +3,7 @@
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
 import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
+import { generateDocx as generateDocxFlow } from '@/ai/flows/generate-docx';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -41,11 +42,14 @@ export async function processBill(
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const clausesResult = await extractClauses({ billText: billText });
-      const summaryResult = await summarizeBill({ billText: billText });
+      const clausesResult = await extractClauses({ billText });
+      if (!clausesResult?.clauses) {
+        throw new Error('AI processing failed to produce valid clauses.');
+      }
       
-      if (!clausesResult?.clauses || !summaryResult?.summary) {
-        throw new Error('AI processing failed to produce a valid output.');
+      const summaryResult = await summarizeBill({ billText });
+      if (!summaryResult?.summary) {
+        throw new Error('AI processing failed to produce a valid summary.');
       }
 
       const processedBill: ProcessedBill = {
@@ -107,13 +111,13 @@ export async function processBill(
   };
 }
 
-const ExplainClauseInput = z.object({
+const ExplainClauseInputSchema = z.object({
   clauseText: z.string(),
   billText: z.string(),
 });
 
 export async function explainClause(
-  input: z.infer<typeof ExplainClauseInput>
+  input: z.infer<typeof ExplainClauseInputSchema>
 ): Promise<string> {
   try {
     const result = await explainClauseFlow(input);
@@ -124,16 +128,48 @@ export async function explainClause(
   } catch (error) {
     console.error('Error in explainClause server action:', error);
     
+    let errorMessage = 'An unexpected error occurred while generating the explanation. Please try again.';
+
     if (error instanceof GoogleGenerativeAIError) {
       if (error.status === 429) {
-        throw new Error('You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.');
-      }
-      if (error.status === 503) {
-        throw new Error('The AI service is temporarily unavailable. Please try again in a few moments.');
+        errorMessage = 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.';
+      } else if (error.status === 503) {
+        errorMessage = 'The AI service is temporarily unavailable. Please try again in a few moments.';
       }
     }
     
-    // For any other error, throw a generic message
-    throw new Error('An unexpected error occurred while generating the explanation. Please try again.');
+    throw new Error(errorMessage);
   }
+}
+
+const GenerateDocxInputSchema = z.object({
+  content: z.string(),
+  fileName: z.string(),
+});
+
+export async function generateDocx(
+  input: z.infer<typeof GenerateDocxInputSchema>
+): Promise<{ docxContent: string | null; error: string | null }> {
+    try {
+        const result = await generateDocxFlow(input);
+        if (!result.docxContent) {
+           return { docxContent: null, error: 'Failed to generate document.' };
+        }
+        return { docxContent: result.docxContent, error: null };
+    } catch (error) {
+        console.error('Error in generateDocx server action:', error);
+        
+        let errorMessage = 'An unexpected error occurred while generating the document. Please try again.';
+
+        if (error instanceof GoogleGenerativeAIError) {
+            if (error.status === 429) {
+                errorMessage = 'You have exceeded the free usage quota. Please check your plan and billing details.';
+            }
+            if (error.status === 503) {
+                errorMessage = 'The AI service is temporarily unavailable. Please try again later.';
+            }
+        }
+        
+        return { docxContent: null, error: errorMessage };
+    }
 }

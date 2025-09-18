@@ -3,11 +3,11 @@
 import { ThumbsUp, ThumbsDown, CircleDot, BrainCircuit, Loader2 } from 'lucide-react';
 import type { Clause } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 type VoteStatus = 'pending' | 'approved' | 'rejected';
 
@@ -18,10 +18,10 @@ interface ClauseCardProps {
   onExplain: (clauseId: string, clauseText: string) => void;
   explanation: string | undefined;
   isExplanationLoading: boolean | undefined;
+  setExplanationLoading: (isLoading: boolean) => void;
 }
 
-export function ClauseCard({ clause, voteStatus, onVote, onExplain, explanation, isExplanationLoading }: ClauseCardProps) {
-  const [isExplanationVisible, setIsExplanationVisible] = useState(false);
+export function ClauseCard({ clause, voteStatus, onVote, onExplain, explanation, isExplanationLoading, setExplanationLoading }: ClauseCardProps) {
 
     const getBadgeVariant = () => {
         switch (voteStatus) {
@@ -40,80 +40,76 @@ export function ClauseCard({ clause, voteStatus, onVote, onExplain, explanation,
     }
 
     const handleExplainClick = () => {
-      const newVisibility = !isExplanationVisible;
-      setIsExplanationVisible(newVisibility);
-      // Fetch explanation only when opening and it hasn't been fetched yet
-      if (newVisibility && !explanation) {
-        onExplain(clause.clauseId, clause.text);
-      }
+      onExplain(clause.clauseId, clause.text);
     };
 
-  return (
-    <Card className="transition-all hover:shadow-md overflow-hidden">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div className='pr-4'>
-            <CardTitle className="text-lg font-medium leading-tight">Clause {clause.clauseNumber}</CardTitle>
-            <p className="pt-2 text-base text-muted-foreground">{clause.text}</p>
-        </div>
-        <Badge variant={getBadgeVariant()} className="capitalize whitespace-nowrap">{getBadgeContent()}</Badge>
-      </CardHeader>
-      <CardContent>
-        <div className="mt-4 flex justify-end space-x-2">
-          <Button
-            size="sm"
-            variant={voteStatus === 'rejected' ? 'destructive' : 'outline'}
-            onClick={() => onVote(clause.clauseId, 'rejected')}
-          >
-            <ThumbsDown className="mr-2 h-4 w-4" /> Reject
-          </Button>
-          <Button
-            size="sm"
-            variant={voteStatus === 'approved' ? 'default' : 'outline'}
-            onClick={() => onVote(clause.clauseId, 'approved')}
-            className={cn(voteStatus === 'approved' && 'bg-green-600 hover:bg-green-700')}
-          >
-            <ThumbsUp className="mr-2 h-4 w-4" /> Approve
-          </Button>
-        </div>
-      </CardContent>
-      <CardFooter className="flex-col items-start p-0">
-         <div className='w-full px-6 pb-2'>
-            <Button
-                variant="ghost"
-                className="w-full justify-start px-0 text-accent hover:text-accent/90"
-                onClick={handleExplainClick}
-            >
-                <BrainCircuit className="mr-2 h-4 w-4" />
-                {isExplanationVisible ? 'Hide' : 'Explain with AI'}
-            </Button>
-         </div>
+    useEffect(() => {
+      // When explanation is loaded (either with content or empty for an error), stop loading.
+      if (explanation !== undefined && isExplanationLoading) {
+        setExplanationLoading(false);
+      }
+    }, [explanation, isExplanationLoading, setExplanationLoading]);
 
-         <AnimatePresence>
-          {isExplanationVisible && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="w-full"
-            >
-              <div className="border-t bg-muted/50 p-6">
-                {isExplanationLoading && (
-                  <div className="flex items-center text-muted-foreground">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating explanation...
-                  </div>
+
+  return (
+    <AccordionItem value={clause.clauseId} className="border-b-0">
+      <Card className="transition-all hover:shadow-md overflow-hidden">
+        <AccordionTrigger className="p-6 hover:no-underline">
+          <div className="flex w-full flex-row items-start justify-between space-x-4 text-left">
+            <div className='pr-4'>
+                <h3 className="text-lg font-medium leading-tight">Clause {clause.clauseNumber}</h3>
+            </div>
+            <Badge variant={getBadgeVariant()} className="capitalize whitespace-nowrap">{getBadgeContent()}</Badge>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="px-6 pb-6 space-y-4">
+            <p className="text-base text-muted-foreground">{clause.text}</p>
+            
+            <div className="border-t pt-4">
+              <Button
+                  variant="ghost"
+                  className="w-full justify-start px-0 text-accent hover:text-accent/90 mb-4"
+                  onClick={handleExplainClick}
+                  disabled={isExplanationLoading}
+              >
+                {isExplanationLoading ? (
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <BrainCircuit className="mr-2 h-4 w-4" />
                 )}
-                {explanation && (
-                  <div className="prose prose-sm max-w-none text-foreground">
-                    <p>{explanation}</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </CardFooter>
-    </Card>
+                Explain with AI
+              </Button>
+
+              {explanation && (
+                <div className="border-t bg-muted/50 p-4 rounded-md">
+                    <div className="prose prose-sm max-w-none text-foreground">
+                      <p>{explanation}</p>
+                    </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-2 border-t pt-4">
+              <Button
+                size="sm"
+                variant={voteStatus === 'rejected' ? 'destructive' : 'outline'}
+                onClick={() => onVote(clause.clauseId, 'rejected')}
+              >
+                <ThumbsDown className="mr-2 h-4 w-4" /> Reject
+              </Button>
+              <Button
+                size="sm"
+                variant={voteStatus === 'approved' ? 'default' : 'outline'}
+                onClick={() => onVote(clause.clauseId, 'approved')}
+                className={cn(voteStatus === 'approved' && 'bg-green-600 hover:bg-green-700')}
+              >
+                <ThumbsUp className="mr-2 h-4 w-4" /> Approve
+              </Button>
+            </div>
+          </div>
+        </AccordionContent>
+      </Card>
+    </AccordionItem>
   );
 }

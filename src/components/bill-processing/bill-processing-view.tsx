@@ -3,13 +3,14 @@
 import { useState, useMemo } from 'react';
 import type { ProcessedBill } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ClauseCard } from './clause-card';
-import { Download, RotateCcw } from 'lucide-react';
+import { RotateCcw, Download } from 'lucide-react';
 import { BillSummary } from './bill-summary';
 import { explainClause } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { Accordion } from '@/components/ui/accordion';
 
 interface BillProcessingViewProps {
   bill: ProcessedBill;
@@ -35,9 +36,10 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
   };
 
   const handleExplainClause = async (clauseId: string, clauseText: string) => {
-    setExplanationLoading((prev) => ({ ...prev, [clauseId]: true }));
-    setExplanations((prev) => ({ ...prev, [clauseId]: '' })); // Clear previous
+    // If explanation is already present, no need to fetch again.
+    if (explanations[clauseId]) return;
 
+    setExplanationLoading((prev) => ({ ...prev, [clauseId]: true }));
     try {
       const explanation = await explainClause({ clauseText, billText: bill.originalText });
       setExplanations((prev) => ({ ...prev, [clauseId]: explanation }));
@@ -47,9 +49,10 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
         title: 'Explanation Failed',
         description: error instanceof Error ? error.message : 'An unknown error occurred.',
       });
-    } finally {
+      // Clear the loading state on error
       setExplanationLoading((prev) => ({ ...prev, [clauseId]: false }));
-    }
+    } 
+    // The loading state is cleared inside the clause card upon receiving the explanation
   };
   
   const { votedCount, totalCount, progress } = useMemo(() => {
@@ -72,21 +75,22 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
         </Button>
       </div>
 
-        <BillSummary summary={bill.summary} originalText={bill.originalText} />
+      <BillSummary summary={bill.summary} originalText={bill.originalText} fileName={bill.fileName} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Clause Voting</CardTitle>
-            <CardDescription>Approve or reject each clause of the bill. Your progress is saved automatically.</CardDescription>
-            <div className="pt-2">
-                <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                    <span>Progress</span>
-                    <span>{votedCount} / {totalCount} clauses voted</span>
-                </div>
-                <Progress value={progress} className="w-full" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Clause Voting</CardTitle>
+          <CardDescription>Approve or reject each clause of the bill. Your progress is saved automatically.</CardDescription>
+          <div className="pt-2">
+            <div className="flex justify-between text-sm text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{votedCount} / {totalCount} clauses voted</span>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            <Progress value={progress} className="w-full" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="multiple" className="w-full space-y-4">
             {bill.clauses.map((clause) => (
               <ClauseCard
                 key={clause.clauseId}
@@ -96,18 +100,12 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
                 onExplain={handleExplainClause}
                 explanation={explanations[clause.clauseId]}
                 isExplanationLoading={explanationLoading[clause.clauseId]}
+                setExplanationLoading={(isLoading) => setExplanationLoading(prev => ({...prev, [clause.clauseId]: isLoading}))}
               />
             ))}
-          </CardContent>
-          <CardFooter className="flex-col items-stretch gap-4 md:flex-row md:justify-end">
-              <Button variant="outline" disabled={progress < 100}>
-                  <Download className="mr-2 h-4 w-4" /> Download as Word
-              </Button>
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={progress < 100}>
-                  <Download className="mr-2 h-4 w-4" /> Download as PDF
-              </Button>
-          </CardFooter>
-        </Card>
+          </Accordion>
+        </CardContent>
+      </Card>
     </div>
   );
 }
