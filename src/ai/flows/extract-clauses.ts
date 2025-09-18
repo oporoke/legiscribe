@@ -1,5 +1,13 @@
 'use server';
 
+/**
+ * @fileOverview Extracts and structures individual clauses from a legislative bill.
+ *
+ * - extractClauses - A function that handles the clause extraction process.
+ * - ExtractClausesInput - The input type for the extractClauses function.
+ * - ExtractClausesOutput - The return type for the extractClauses function.
+ */
+
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
@@ -31,8 +39,7 @@ const extractClausesPrompt = ai.definePrompt({
   prompt: `You are an expert legal assistant specializing in parsing legislative documents.
 Your task is to meticulously break down the provided bill text into its individual, distinct clauses.
 
-- It is critical that you treat every single paragraph as a distinct clause, even if it is a heading or a single line.
-- Analyze the structure of the document. A clause is any paragraph, a numbered or lettered item, a "Section", or any other distinct part of the text.
+- Analyze the entire structure of the document to identify distinct clauses. A clause can be a paragraph, a numbered or lettered item, or any other distinct section of the text. Do not omit any part of the document.
 - Sequentially number each extracted clause, starting from 1.
 - For each clause, create a unique ID in the format "clause-N", where N is its sequential number.
 - The full, original text of each clause must be preserved without any modification whatsoever.
