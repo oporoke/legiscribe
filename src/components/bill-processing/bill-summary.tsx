@@ -31,16 +31,29 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
   const getFormattedText = (text: string) => {
     return text.split('\n').map((paragraph, index) => {
       if (
-        /^(Article|Section|Part)\. \w+\./.test(paragraph.trim()) ||
-        paragraph.trim() === 'CONSTITUTION OF THE UNITED STATES'
+        /^(## .*|### .*|\*\*PART.*|\* \*\*Clause.*)/.test(paragraph.trim())
       ) {
+        if (paragraph.startsWith('## ')) {
+           return (
+            <h2 key={index} className="text-xl font-bold font-headline mt-6 mb-3">
+              {paragraph.replace(/## /g, '')}
+            </h2>
+          );
+        }
+        if (paragraph.startsWith('### ')) {
+           return (
+            <h3 key={index} className="text-lg font-semibold font-headline mt-4 mb-2">
+              {paragraph.replace(/### /g, '')}
+            </h3>
+          );
+        }
         return (
-          <h3
+          <h4
             key={index}
-            className="text-lg font-bold font-headline mt-4 mb-2"
+            className="text-base font-bold mt-4 mb-2"
           >
-            {paragraph}
-          </h3>
+            {paragraph.replace(/\* \*\*Clause/g, 'Clause').replace(/\*\*/g, '')}
+          </h4>
         );
       }
       return (
@@ -96,7 +109,7 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
               Original Text
             </TabsTrigger>
           </TabsList>
-          <ScrollArea className="w-full mt-4 pr-4 max-h-[60vh]">
+          <ScrollArea className="w-full mt-4 pr-4 h-[60vh]">
             <TabsContent value="summary">
               <div className="prose prose-sm max-w-none text-foreground">
                 {getFormattedText(summary)}
