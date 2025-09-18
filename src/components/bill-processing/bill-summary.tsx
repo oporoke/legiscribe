@@ -15,25 +15,22 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BrainCircuit, FileTextIcon, Download } from 'lucide-react';
+import { BrainCircuit, FileTextIcon, Download, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
+import type { AnalyzeStakeholdersOutput } from '@/ai/flows/analyze-stakeholders';
 
 interface BillSummaryProps {
   summary: string;
   originalText: string;
   fileName: string;
+  stakeholderAnalysis?: AnalyzeStakeholdersOutput;
 }
 
-export function BillSummary({ summary, originalText, fileName }: BillSummaryProps) {
+export function BillSummary({ summary, originalText, fileName, stakeholderAnalysis }: BillSummaryProps) {
   const { toast } = useToast();
   
   const getFormattedText = (text: string) => {
-    // Using prose classes from Tailwind for better typography
-    // prose-h2: applies styles to h2
-    // prose-h3: applies styles to h3
-    // prose-p: applies styles to p
-    // prose-strong: applies styles to strong/bold text
     return text.split('\n').map((paragraph, index) => {
       if (paragraph.trim().startsWith('## ')) {
         return (
@@ -102,9 +99,9 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bill Text</CardTitle>
+        <CardTitle>Bill Analysis</CardTitle>
         <CardDescription>
-          View the AI-generated summary or the original bill text.
+          Review AI-generated analyses or the original bill text.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -118,6 +115,12 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
               <FileTextIcon className="mr-2 h-4 w-4" />
               Original Text
             </TabsTrigger>
+             {stakeholderAnalysis && (
+              <TabsTrigger value="stakeholders">
+                <Users className="mr-2 h-4 w-4" />
+                Stakeholder Analysis
+              </TabsTrigger>
+            )}
           </TabsList>
           <ScrollArea className="w-full mt-4 pr-4 h-[60vh]">
             <TabsContent value="summary">
@@ -130,6 +133,40 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
                 {getFormattedText(originalText)}
               </div>
             </TabsContent>
+             {stakeholderAnalysis && (
+              <TabsContent value="stakeholders">
+                <div className="space-y-6 text-foreground">
+                  <div>
+                    <h3 className="text-xl font-semibold font-headline mb-3">Overall Impact Summary</h3>
+                    <p className="text-muted-foreground">{stakeholderAnalysis.overallImpactSummary}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold font-headline mb-4">Impact on Specific Groups</h3>
+                     <div className="space-y-4">
+                      {stakeholderAnalysis.stakeholderImpacts.map((impact, index) => (
+                        <Card key={index} className="bg-card/50">
+                          <CardHeader>
+                            <CardTitle className="text-lg">{impact.stakeholderGroup}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                             <div>
+                                <h4 className="font-semibold text-sm mb-2 text-primary">Impact Summary</h4>
+                                <p className="text-sm text-muted-foreground">{impact.impactSummary}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-2 text-primary">Potential Effects</h4>
+                                <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                  {impact.potentialEffects.map((effect, i) => <li key={i}>{effect}</li>)}
+                                </ul>
+                              </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            )}
           </ScrollArea>
         </Tabs>
       </CardContent>

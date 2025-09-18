@@ -76,7 +76,12 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
       {bill.comparison ? (
           <BillComparison comparison={bill.comparison} />
       ) : (
-          <BillSummary summary={bill.summary} originalText={bill.originalText} fileName={bill.fileName} />
+          <BillSummary 
+            summary={bill.summary} 
+            originalText={bill.originalText} 
+            fileName={bill.fileName} 
+            stakeholderAnalysis={bill.stakeholderAnalysis}
+          />
       )}
 
 
