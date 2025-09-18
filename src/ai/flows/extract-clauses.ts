@@ -29,13 +29,13 @@ const extractClausesPrompt = ai.definePrompt({
   input: { schema: ExtractClausesInputSchema },
   output: { schema: ExtractClausesOutputSchema },
   prompt: `You are an expert legal assistant specializing in parsing legislative documents.
-Your task is to meticulously break down the provided bill text into its individual, distinct clauses or provisions.
+Your task is to meticulously break down the provided bill text into its individual, distinct clauses.
 
-- Analyze the structure of the document. A clause can be a paragraph, a numbered or lettered item, a "Section", or any other distinct part of the text that can be voted on.
-- Identify each distinct clause. Pay close attention to numbering (e.g., Section 1, Section 2) and paragraphs.
-- Number each extracted clause sequentially, starting from 1.
+- It is critical that you treat every single paragraph as a distinct clause, even if it is a heading or a single line.
+- Analyze the structure of the document. A clause is any paragraph, a numbered or lettered item, a "Section", or any other distinct part of the text.
+- Sequentially number each extracted clause, starting from 1.
 - For each clause, create a unique ID in the format "clause-N", where N is its sequential number.
-- It is crucial that the full, original text of each clause is preserved without any modification.
+- The full, original text of each clause must be preserved without any modification whatsoever.
 - Return the result as a structured JSON object containing a list of these clause objects.
 
 Bill Text:
