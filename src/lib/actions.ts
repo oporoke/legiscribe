@@ -3,7 +3,6 @@
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
 import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
-import { generateDocx as generateDocxFlow } from '@/ai/flows/generate-docx';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -140,36 +139,4 @@ export async function explainClause(
     
     throw new Error(errorMessage);
   }
-}
-
-const GenerateDocxInputSchema = z.object({
-  content: z.string(),
-  fileName: z.string(),
-});
-
-export async function generateDocx(
-  input: z.infer<typeof GenerateDocxInputSchema>
-): Promise<{ docxContent: string | null; error: string | null }> {
-    try {
-        const result = await generateDocxFlow(input);
-        if (!result.docxContent) {
-           return { docxContent: null, error: 'Failed to generate document.' };
-        }
-        return { docxContent: result.docxContent, error: null };
-    } catch (error) {
-        console.error('Error in generateDocx server action:', error);
-        
-        let errorMessage = 'An unexpected error occurred while generating the document. Please try again.';
-
-        if (error instanceof GoogleGenerativeAIError) {
-            if (error.status === 429) {
-                errorMessage = 'You have exceeded the free usage quota. Please check your plan and billing details.';
-            }
-            if (error.status === 503) {
-                errorMessage = 'The AI service is temporarily unavailable. Please try again later.';
-            }
-        }
-        
-        return { docxContent: null, error: errorMessage };
-    }
 }
