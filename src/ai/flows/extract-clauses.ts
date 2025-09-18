@@ -37,13 +37,14 @@ const extractClausesPrompt = ai.definePrompt({
   input: { schema: ExtractClausesInputSchema },
   output: { schema: ExtractClausesOutputSchema },
   prompt: `You are an expert legal assistant specializing in parsing legislative documents.
-Your task is to meticulously break down the provided bill text into its individual, distinct clauses.
+Your task is to meticulously break down the provided bill text into its individual, distinct clauses, ensuring that each clause is kept together as a single unit.
 
-- Analyze the entire structure of the document to identify distinct clauses. A clause can be a paragraph, a numbered or lettered item, or any other distinct section of the text. Do not omit any part of the document.
-- Pay close attention to the document's structure (Parts, sections, sub-sections). Ensure your extraction preserves this hierarchy implicitly in the sequence of clauses.
+- **CRITICAL RULE**: A clause and all of its subsections (e.g., (1), (a), (i), etc.) are a single unit. Do NOT split them into separate entries. Identify the start of a new clause (e.g., "Section. 1.", "Clause 2.", "Article. I.") and capture all text belonging to it until the next clause begins.
+- Analyze the entire structure of the document to identify these distinct clauses.
+- Pay close attention to the document's structure (Parts, sections, sub-sections). Your extraction must preserve this hierarchy by keeping all parts of a clause together.
 - Sequentially number each extracted clause, starting from 1.
 - For each clause, create a unique ID in the format "clause-N", where N is its sequential number.
-- The full, original text of each clause must be preserved without any modification whatsoever.
+- The full, original text of each clause, including all its sub-parts, must be preserved without any modification.
 - Return the result as a structured JSON object containing a list of these clause objects.
 
 Bill Text:
