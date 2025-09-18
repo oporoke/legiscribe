@@ -16,6 +16,7 @@ body {
     --popover-foreground: 210 25% 20%;
     --primary: 210 31% 28%;
     --primary-foreground: 210 40% 98%;
+    --primary-background: 210 31% 95%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 210 31% 28%;
     --muted: 210 40% 96.1%;
@@ -24,6 +25,7 @@ body {
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --destructive-background: 0 84.2% 97%;
     --border: 210 20% 89%;
     --input: 210 20% 89%;
     --ring: 189 29% 51%;
@@ -51,6 +53,7 @@ body {
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 210 31% 28%;
+    --primary-background: 210 31% 20%;
     --secondary: 210 31% 20%;
     --secondary-foreground: 210 40% 98%;
     --muted: 210 31% 20%;
@@ -59,6 +62,7 @@ body {
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+    --destructive-background: 0 62.8% 15%;
     --border: 210 31% 20%;
     --input: 210 31% 20%;
     --ring: 189 29% 51%;

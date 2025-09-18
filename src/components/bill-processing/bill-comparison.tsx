@@ -71,22 +71,22 @@ export function BillComparison({ comparison }: BillComparisonProps) {
                           </p>
                         </div>
                         <div className="grid md:grid-cols-2 gap-4">
-                          <div className="border rounded-md p-4 bg-red-50/50">
-                            <h6 className="font-semibold text-sm mb-2 text-red-800">
+                          <div className="border rounded-md p-4 bg-destructive/10">
+                            <h6 className="font-semibold text-sm mb-2 text-destructive">
                               Original Text
                             </h6>
                             <ScrollArea className="h-48">
-                              <p className="prose prose-sm max-w-none text-red-900 whitespace-pre-wrap">
+                              <p className="prose prose-sm max-w-none text-destructive-foreground/80 whitespace-pre-wrap">
                                 {section.originalText}
                               </p>
                             </ScrollArea>
                           </div>
-                          <div className="border rounded-md p-4 bg-green-50/50">
-                            <h6 className="font-semibold text-sm mb-2 text-green-800">
+                          <div className="border rounded-md p-4 bg-primary/10">
+                            <h6 className="font-semibold text-sm mb-2 text-primary">
                               Amended Text
                             </h6>
                              <ScrollArea className="h-48">
-                              <p className="prose prose-sm max-w-none text-green-900 whitespace-pre-wrap">
+                              <p className="prose prose-sm max-w-none text-primary-foreground/80 whitespace-pre-wrap">
                                 {section.amendedText}
                               </p>
                             </ScrollArea>
