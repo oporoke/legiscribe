@@ -13,13 +13,35 @@ export function LegiscribeClientPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleProcessBill = async (file: File) => {
+  const handleProcessBill = async (file: File, amendedFile?: File | null) => {
     setIsLoading(true);
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const fileContent = event.target?.result as string;
-      const result = await processBill({ fileName: file.name, fileContent, fileType: file.type });
+    const readFile = (fileToRead: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          resolve(event.target?.result as string);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+        reader.readAsDataURL(fileToRead);
+      });
+    };
+
+    try {
+      const fileContent = await readFile(file);
+      const amendedFileContent = amendedFile ? await readFile(amendedFile) : undefined;
+      
+      const result = await processBill({
+        fileName: file.name,
+        fileContent,
+        fileType: file.type,
+        amendedFileName: amendedFile?.name,
+        amendedFileContent,
+        amendedFileType: amendedFile?.type,
+      });
+
       setIsLoading(false);
 
       if (result.error) {
@@ -35,16 +57,14 @@ export function LegiscribeClientPage() {
           description: `Successfully processed ${result.bill.fileName}.`,
         });
       }
-    };
-    reader.onerror = () => {
+    } catch (error) {
       setIsLoading(false);
       toast({
         variant: 'destructive',
         title: 'File Read Error',
-        description: 'Could not read the selected file.',
+        description: 'Could not read the selected file(s).',
       });
     }
-    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {

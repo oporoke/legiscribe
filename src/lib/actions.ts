@@ -12,6 +12,9 @@ const ProcessBillInput = z.object({
   fileName: z.string(),
   fileContent: z.string(),
   fileType: z.string(),
+  amendedFileName: z.string().optional(),
+  amendedFileContent: z.string().optional(),
+  amendedFileType: z.string().optional(),
 });
 
 async function sleep(ms: number) {
@@ -26,8 +29,11 @@ export async function processBill(
     return { bill: null, error: 'Invalid input.' };
   }
   
-  const { fileName, fileContent, fileType } = validatedInput.data;
+  const { fileName, fileContent, fileType, amendedFileContent, amendedFileName, amendedFileType } = validatedInput.data;
   
+  // For now, we only process the original bill.
+  // The comparison logic will be added in the next step.
+
   let billText: string;
   try {
     billText = await handleFileUpload({
