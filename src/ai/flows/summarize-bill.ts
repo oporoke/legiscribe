@@ -18,7 +18,7 @@ const SummarizeBillInputSchema = z.object({
 export type SummarizeBillInput = z.infer<typeof SummarizeBillInputSchema>;
 
 const SummarizeBillOutputSchema = z.object({
-  summary: z.string().describe('The summarized text of the legislative bill, approximately 5-7% shorter than the original.'),
+  summary: z.string().describe('The summarized text of the legislative bill, approximately 5-10% of the original length.'),
 });
 
 export type SummarizeBillOutput = z.infer<typeof SummarizeBillOutputSchema>;
@@ -33,7 +33,7 @@ const summarizeBillPrompt = ai.definePrompt({
   output: {schema: SummarizeBillOutputSchema},
   prompt: `You are an expert legal professional tasked with summarizing legislative bills.
 
-Your task is to summarize the provided bill text to be approximately 5-7% shorter than the original.
+Your task is to create a concise summary of the provided bill text. The summary should be approximately 5-10% of the length of the original document.
 
 It is absolutely critical that you preserve the original legal meaning and intent.
 You must also maintain all original formatting, including headings, sections, and numbering. Do not alter the structure of the document.
