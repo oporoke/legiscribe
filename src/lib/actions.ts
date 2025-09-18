@@ -10,7 +10,6 @@ import { analyzePublicSentiment } from '@/ai/flows/analyze-public-sentiment';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
-import { GoogleGenerativeAIError } from '@google/generative-ai';
 
 const ProcessBillInput = z.object({
   fileName: z.string(),
@@ -120,10 +119,7 @@ export async function processBill(
       let isServiceUnavailable = false;
       let isRateLimited = false;
 
-      if (error instanceof GoogleGenerativeAIError) {
-        isServiceUnavailable = error.status === 503;
-        isRateLimited = error.status === 429;
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         const message = error.message.toLowerCase();
         isServiceUnavailable = message.includes('503') || message.includes('service unavailable');
         isRateLimited = message.includes('429') || message.includes('too many requests') || message.includes('rate limit');
@@ -183,12 +179,13 @@ export async function explainClause(
     
     let errorMessage = 'An unexpected error occurred while generating the explanation. Please try again.';
 
-    if (error instanceof GoogleGenerativeAIError) {
-      if (error.status === 429) {
-        errorMessage = 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.';
-      } else if (error.status === 503) {
-        errorMessage = 'The AI service is temporarily unavailable. Please try again in a few moments.';
-      }
+    if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        if (message.includes('429')) {
+          errorMessage = 'You have exceeded the free usage quota for the AI model. Please check your plan and billing details, or try again later.';
+        } else if (message.includes('503')) {
+          errorMessage = 'The AI service is temporarily unavailable. Please try again in a few moments.';
+        }
     }
     
     throw new Error(errorMessage);

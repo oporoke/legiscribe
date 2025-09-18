@@ -1,6 +1,6 @@
 # Legiscribe - AI-Powered Legislative Analysis Platform
 
-Legiscribe is a modern, AI-driven web application designed to streamline the process of reviewing, understanding, and voting on legislative bills. It leverages the power of Google's Gemini models through Genkit to provide users with deep insights into complex legal documents, making the legislative process more transparent and efficient.
+Legiscribe is a modern, AI-driven web application designed to streamline the process of reviewing, understanding, and voting on legislative bills. It leverages the power of AI through Genkit to provide users with deep insights into complex legal documents, making the legislative process more transparent and efficient.
 
 ## Key Features
 
@@ -19,7 +19,7 @@ Legiscribe is a modern, AI-driven web application designed to streamline the pro
 ## Technology Stack
 
 - **Framework**: [Next.js](https://nextjs.org/) (using the App Router)
-- **AI Integration**: [Genkit](https://firebase.google.com/docs/genkit) with [Google Gemini](https://deepmind.google/technologies/gemini/) models
+- **AI Integration**: [Genkit](https://firebase.google.com/docs/genkit) with [OpenAI](https://openai.com/) models
 - **UI Components**: [ShadCN/UI](https://ui.shadcn.com/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
@@ -48,10 +48,10 @@ Follow these instructions to set up and run the project on your local machine fo
     ```
 
 3.  **Set Up Environment Variables**:
-    Create a `.env` file in the root of the project and add your Google AI API key. You can obtain a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+    Create a `.env` file in the root of the project and add your OpenAI API key.
 
     ```env
-    GEMINI_API_KEY=your_google_api_key_here
+    OPENAI_API_KEY=your_openai_api_key_here
     ```
 
 ### Running the Application

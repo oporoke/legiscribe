@@ -1,7 +1,11 @@
 import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import {openai} from '@genkit-ai/openai';
 
 export const ai = genkit({
-  plugins: [googleAI()],
-  model: 'googleai/gemini-1.5-flash',
+  plugins: [
+    openai({
+      apiKey: process.env.OPENAI_API_KEY || '',
+    }),
+  ],
+  model: 'openai/gpt-4-turbo',
 });
