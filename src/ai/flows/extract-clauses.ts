@@ -19,6 +19,7 @@ const ClauseSchema = z.object({
   clauseId: z.string().describe('A unique identifier for the clause, e.g., "clause-1".'),
   clauseNumber: z.number().describe('The sequential number of the clause.'),
   text: z.string().describe('The full text of the clause.'),
+  summary: z.string().describe('A concise, one-sentence summary of the clause.'),
 });
 
 const ExtractClausesOutputSchema = z.object({
@@ -41,6 +42,7 @@ Your task is to meticulously break down the provided bill text into its individu
 
 - **CRITICAL RULE**: A clause and all of its subsections (e.g., (1), (a), (i), etc.) are a single unit. Do NOT split them into separate entries. Identify the start of a new clause (e.g., "Section. 1.", "Clause 2.", "Article. I.") and capture all text belonging to it until the next clause begins.
 - Analyze the entire structure of the document to identify these distinct clauses.
+- For each clause, you must also provide a concise, one-sentence summary of its main purpose or effect.
 - Pay close attention to the document's structure (Parts, sections, sub-sections). Your extraction must preserve this hierarchy by keeping all parts of a clause together.
 - Sequentially number each extracted clause, starting from 1.
 - For each clause, create a unique ID in the format "clause-N", where N is its sequential number.

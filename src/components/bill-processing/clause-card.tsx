@@ -37,8 +37,9 @@ export function ClauseCard({ clause, voteStatus, onVote, onExplain, explanation,
       <Card className="transition-all hover:shadow-md overflow-hidden">
         <AccordionTrigger className="p-6 hover:no-underline">
           <div className="flex w-full flex-row items-start justify-between space-x-4 text-left">
-            <div className='pr-4'>
+            <div className='pr-4 flex-1'>
                 <h3 className="text-lg font-medium leading-tight">Clause {clause.clauseNumber}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{clause.summary}</p>
             </div>
             <div className="flex items-center space-x-2">
                 <ThumbsUp className={cn("h-5 w-5", voteStatus === 'approved' ? 'text-green-600' : 'text-muted-foreground/50')} />
