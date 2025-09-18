@@ -1,3 +1,5 @@
+import type { CompareBillsOutput } from "@/ai/flows/compare-bills";
+
 export interface Clause {
   clauseId: string;
   clauseNumber: number;
@@ -11,4 +13,5 @@ export interface ProcessedBill {
   originalText: string;
   clauses: Clause[];
   summary: string;
+  comparison?: CompareBillsOutput;
 }

@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ClauseCard } from './clause-card';
-import { RotateCcw, Download } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { BillSummary } from './bill-summary';
+import { BillComparison } from './bill-comparison';
 import { explainClause } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion } from '@/components/ui/accordion';
@@ -36,7 +37,6 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
   };
 
   const handleExplainClause = async (clauseId: string, clauseText: string) => {
-    // If explanation is already present, no need to fetch again.
     if (explanations[clauseId]) return;
 
     setExplanationLoading((prev) => ({ ...prev, [clauseId]: true }));
@@ -49,10 +49,8 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
         title: 'Explanation Failed',
         description: error instanceof Error ? error.message : 'An unknown error occurred.',
       });
-      // Clear the loading state on error
       setExplanationLoading((prev) => ({ ...prev, [clauseId]: false }));
     } 
-    // The loading state is cleared inside the clause card upon receiving the explanation
   };
   
   const { votedCount, totalCount, progress } = useMemo(() => {
@@ -75,11 +73,16 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
         </Button>
       </div>
 
-      <BillSummary summary={bill.summary} originalText={bill.originalText} fileName={bill.fileName} />
+      {bill.comparison ? (
+          <BillComparison comparison={bill.comparison} />
+      ) : (
+          <BillSummary summary={bill.summary} originalText={bill.originalText} fileName={bill.fileName} />
+      )}
+
 
       <Card>
         <CardHeader>
-          <CardTitle>Clause Voting</CardTitle>
+          <CardTitle>Clause Voting (Original Bill)</CardTitle>
           <CardDescription>Approve or reject each clause of the bill. Your progress is saved automatically.</CardDescription>
           <div className="pt-2">
             <div className="flex justify-between text-sm text-muted-foreground mb-1">

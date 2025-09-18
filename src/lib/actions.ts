@@ -3,6 +3,7 @@
 import { extractClauses } from '@/ai/flows/extract-clauses';
 import { summarizeBill } from '@/ai/flows/summarize-bill';
 import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
+import { compareBills } from '@/ai/flows/compare-bills';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -31,22 +32,31 @@ export async function processBill(
   
   const { fileName, fileContent, fileType, amendedFileContent, amendedFileName, amendedFileType } = validatedInput.data;
   
-  // For now, we only process the original bill.
-  // The comparison logic will be added in the next step.
+  const isCompareMode = amendedFileContent && amendedFileName && amendedFileType;
 
   let billText: string;
+  let amendedBillText: string | undefined;
+
   try {
     billText = await handleFileUpload({
       fileName,
       fileContent,
       fileType,
     });
+    if (isCompareMode) {
+      amendedBillText = await handleFileUpload({
+        fileName: amendedFileName,
+        fileContent: amendedFileContent,
+        fileType: amendedFileType,
+      });
+    }
   } catch (error) {
-    return { bill: null, error: error instanceof Error ? error.message : 'Failed to read file.' };
+    return { bill: null, error: error instanceof Error ? error.message : 'Failed to read file(s).' };
   }
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
+      // Common processing for both modes
       const clausesResult = await extractClauses({ billText });
       if (!clausesResult?.clauses) {
         throw new Error('AI processing failed to produce valid clauses.');
@@ -59,11 +69,24 @@ export async function processBill(
 
       const processedBill: ProcessedBill = {
         id: new Date().toISOString(),
-        fileName: fileName,
+        fileName: isCompareMode ? `${fileName} vs. ${amendedFileName}` : fileName,
         originalText: billText,
         clauses: clausesResult.clauses,
         summary: summaryResult.summary,
       };
+
+      // Comparison-specific processing
+      if (isCompareMode && amendedBillText) {
+         const comparisonResult = await compareBills({
+           originalBillText: billText,
+           amendedBillText: amendedBillText,
+         });
+         if (!comparisonResult) {
+            throw new Error('AI processing failed to produce a valid comparison.');
+         }
+         processedBill.comparison = comparisonResult;
+      }
+
 
       return { bill: processedBill, error: null };
     } catch (error: unknown) {
