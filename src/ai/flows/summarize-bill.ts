@@ -33,10 +33,15 @@ const summarizeBillPrompt = ai.definePrompt({
   output: {schema: SummarizeBillOutputSchema},
   prompt: `You are an expert legal professional tasked with summarizing legislative bills.
 
-Your task is to create a concise summary of the provided bill text. The summary should be approximately 5-10% of the length of the original document.
+Your task is to create a concise executive summary of the provided bill text. The summary should be approximately 5-10% of the length of the original document.
+
+The summary should include:
+1.  **Overview**: A 2-3 sentence statement of the bill's main objective and scope.
+2.  **Key Changes**: Note any major changes from previous legislation, if apparent.
+3.  **Part-by-Part Summary**: Briefly summarize the key provisions of each major part or section of the bill.
 
 It is absolutely critical that you preserve the original legal meaning and intent.
-You must also maintain all original formatting, including headings, sections, and numbering. Do not alter the structure of the document.
+You must also maintain all original formatting, including headings, sections, and numbering, to ensure the summary's structure reflects the original document.
 
 Bill Text:
 {{{billText}}}`,

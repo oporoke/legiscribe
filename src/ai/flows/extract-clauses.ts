@@ -40,6 +40,7 @@ const extractClausesPrompt = ai.definePrompt({
 Your task is to meticulously break down the provided bill text into its individual, distinct clauses.
 
 - Analyze the entire structure of the document to identify distinct clauses. A clause can be a paragraph, a numbered or lettered item, or any other distinct section of the text. Do not omit any part of the document.
+- Pay close attention to the document's structure (Parts, sections, sub-sections). Ensure your extraction preserves this hierarchy implicitly in the sequence of clauses.
 - Sequentially number each extracted clause, starting from 1.
 - For each clause, create a unique ID in the format "clause-N", where N is its sequential number.
 - The full, original text of each clause must be preserved without any modification whatsoever.
