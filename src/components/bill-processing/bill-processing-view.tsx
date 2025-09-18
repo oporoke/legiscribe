@@ -12,6 +12,7 @@ import { BillComparison } from './bill-comparison';
 import { explainClause } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion } from '@/components/ui/accordion';
+import { PrecedentAnalysis } from './precedent-analysis';
 
 interface BillProcessingViewProps {
   bill: ProcessedBill;
@@ -82,6 +83,10 @@ export function BillProcessingView({ bill, onReset }: BillProcessingViewProps) {
             fileName={bill.fileName} 
             stakeholderAnalysis={bill.stakeholderAnalysis}
           />
+      )}
+
+      {bill.precedentAnalysis && (
+        <PrecedentAnalysis analysis={bill.precedentAnalysis} />
       )}
 
 
