@@ -29,35 +29,45 @@ export function BillSummary({ summary, originalText, fileName }: BillSummaryProp
   const { toast } = useToast();
   
   const getFormattedText = (text: string) => {
+    // Using prose classes from Tailwind for better typography
+    // prose-h2: applies styles to h2
+    // prose-h3: applies styles to h3
+    // prose-p: applies styles to p
+    // prose-strong: applies styles to strong/bold text
     return text.split('\n').map((paragraph, index) => {
-      if (
-        /^(## .*|### .*|\*\*PART.*|\* \*\*Clause.*)/.test(paragraph.trim())
-      ) {
-        if (paragraph.startsWith('## ')) {
-           return (
-            <h2 key={index} className="text-xl font-bold font-headline mt-6 mb-3">
-              {paragraph.replace(/## /g, '')}
-            </h2>
-          );
-        }
-        if (paragraph.startsWith('### ')) {
-           return (
-            <h3 key={index} className="text-lg font-semibold font-headline mt-4 mb-2">
-              {paragraph.replace(/### /g, '')}
-            </h3>
-          );
-        }
+      if (paragraph.trim().startsWith('## ')) {
         return (
-          <h4
-            key={index}
-            className="text-base font-bold mt-4 mb-2"
-          >
-            {paragraph.replace(/\* \*\*Clause/g, 'Clause').replace(/\*\*/g, '')}
+          <h2 key={index} className="text-2xl font-bold font-headline mt-8 mb-4 border-b pb-2">
+            {paragraph.replace(/## /g, '')}
+          </h2>
+        );
+      }
+      if (paragraph.trim().startsWith('### ')) {
+        return (
+          <h3 key={index} className="text-xl font-semibold font-headline mt-6 mb-3">
+            {paragraph.replace(/### /g, '')}
+          </h3>
+        );
+      }
+      if (/^\*\*PART.*?\*\*/.test(paragraph.trim())) {
+        return (
+          <h4 key={index} className="text-lg font-bold mt-6 mb-2">
+            {paragraph.replace(/\*\*/g, '')}
           </h4>
         );
       }
+      if (/^\* \*\*Clause.*?\*\*/.test(paragraph.trim())) {
+        return (
+          <h5 key={index} className="text-base font-semibold mt-4 mb-1">
+             {paragraph.replace(/\* \*\*/g, '').replace(/\*\*/g, '')}
+          </h5>
+        )
+      }
+      if(paragraph.trim().startsWith('- ')){
+         return <p key={index} className="mb-2 pl-4">{paragraph}</p>;
+      }
       return (
-        <p key={index} className="mb-4 last:mb-0">
+        <p key={index} className="mb-4 last:mb-0 leading-relaxed">
           {paragraph}
         </p>
       );
