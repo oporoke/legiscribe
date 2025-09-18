@@ -1,6 +1,7 @@
 import type { CompareBillsOutput } from "@/ai/flows/compare-bills";
 import type { AnalyzeStakeholdersOutput } from "@/ai/flows/analyze-stakeholders";
 import type { AnalyzePrecedentOutput } from "@/ai/flows/analyze-precedent";
+import type { AnalyzePublicSentimentOutput } from "@/ai/flows/analyze-public-sentiment";
 
 export interface Clause {
   clauseId: string;
@@ -18,4 +19,5 @@ export interface ProcessedBill {
   comparison?: CompareBillsOutput;
   stakeholderAnalysis?: AnalyzeStakeholdersOutput;
   precedentAnalysis?: AnalyzePrecedentOutput;
+  sentimentAnalysis?: AnalyzePublicSentimentOutput;
 }

@@ -6,6 +6,7 @@ import { explainClause as explainClauseFlow } from '@/ai/flows/explain-clause';
 import { compareBills } from '@/ai/flows/compare-bills';
 import { analyzeStakeholders } from '@/ai/flows/analyze-stakeholders';
 import { analyzePrecedent } from '@/ai/flows/analyze-precedent';
+import { analyzePublicSentiment } from '@/ai/flows/analyze-public-sentiment';
 import type { ProcessedBill } from '@/lib/types';
 import { z } from 'zod';
 import { handleFileUpload } from './actions/handle-file-upload';
@@ -59,11 +60,12 @@ export async function processBill(
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       // Run AI flows in parallel
-      const [clausesResult, summaryResult, stakeholderAnalysisResult, precedentAnalysisResult] = await Promise.all([
+      const [clausesResult, summaryResult, stakeholderAnalysisResult, precedentAnalysisResult, sentimentAnalysisResult] = await Promise.all([
         extractClauses({ billText }),
         summarizeBill({ billText }),
         analyzeStakeholders({ billText }),
         analyzePrecedent({ billText }),
+        analyzePublicSentiment({billText}),
       ]);
 
       if (!clausesResult?.clauses) {
@@ -81,6 +83,11 @@ export async function processBill(
       if (!precedentAnalysisResult) {
         throw new Error('AI processing failed to produce a valid precedent analysis.');
       }
+      
+      if (!sentimentAnalysisResult) {
+        throw new Error('AI processing failed to produce a valid sentiment analysis.');
+      }
+
 
       const processedBill: ProcessedBill = {
         id: new Date().toISOString(),
@@ -90,6 +97,7 @@ export async function processBill(
         summary: summaryResult.summary,
         stakeholderAnalysis: stakeholderAnalysisResult,
         precedentAnalysis: precedentAnalysisResult,
+        sentimentAnalysis: sentimentAnalysisResult,
       };
 
       // Comparison-specific processing

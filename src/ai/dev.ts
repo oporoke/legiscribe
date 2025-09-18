@@ -8,3 +8,4 @@ import '@/ai/flows/explain-clause.ts';
 import '@/ai/flows/compare-bills.ts';
 import '@/ai/flows/analyze-stakeholders.ts';
 import '@/ai/flows/analyze-precedent.ts';
+import '@/ai/flows/analyze-public-sentiment.ts';
