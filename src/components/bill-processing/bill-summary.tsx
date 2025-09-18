@@ -19,6 +19,7 @@ import { BrainCircuit, FileTextIcon, Download, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { AnalyzeStakeholdersOutput } from '@/ai/flows/analyze-stakeholders';
+import { cn } from '@/lib/utils';
 
 interface BillSummaryProps {
   summary: string;
@@ -96,6 +97,8 @@ export function BillSummary({ summary, originalText, fileName, stakeholderAnalys
     }
   };
 
+  const hasStakeholderAnalysis = !!stakeholderAnalysis && stakeholderAnalysis.stakeholderImpacts.length > 0;
+
   return (
     <Card>
       <CardHeader>
@@ -106,7 +109,7 @@ export function BillSummary({ summary, originalText, fileName, stakeholderAnalys
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="summary">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={cn("grid w-full", hasStakeholderAnalysis ? "grid-cols-3" : "grid-cols-2")}>
             <TabsTrigger value="summary">
               <BrainCircuit className="mr-2 h-4 w-4" />
               AI Summary
@@ -115,7 +118,7 @@ export function BillSummary({ summary, originalText, fileName, stakeholderAnalys
               <FileTextIcon className="mr-2 h-4 w-4" />
               Original Text
             </TabsTrigger>
-             {stakeholderAnalysis && (
+             {hasStakeholderAnalysis && (
               <TabsTrigger value="stakeholders">
                 <Users className="mr-2 h-4 w-4" />
                 Stakeholder Analysis
@@ -133,7 +136,7 @@ export function BillSummary({ summary, originalText, fileName, stakeholderAnalys
                 {getFormattedText(originalText)}
               </div>
             </TabsContent>
-             {stakeholderAnalysis && (
+             {hasStakeholderAnalysis && (
               <TabsContent value="stakeholders">
                 <div className="space-y-6 text-foreground">
                   <div>
