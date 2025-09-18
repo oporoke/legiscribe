@@ -1,5 +1,5 @@
 import {genkit} from 'genkit';
-import openAI, { gpt4Turbo } from '@genkit-ai/compat-oai';
+import openAI from '@genkit-ai/compat-oai';
 
 export const ai = genkit({
   plugins: [
@@ -7,5 +7,5 @@ export const ai = genkit({
       apiKey: process.env.OPENAI_API_KEY || '',
     }),
   ],
-  model: gpt4Turbo,
+  model: 'gpt-4-turbo',
 });
