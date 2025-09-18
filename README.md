@@ -34,7 +34,7 @@ Follow these instructions to set up and run the project on your local machine fo
 
 1.  **Clone the Repository**:
     ```bash
-    git clone https://github.com/your-repository/legiscribe.git
+    git clone https://github.com/oporoke/legiscribe.git
     cd legiscribe
     ```
 
